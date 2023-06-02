@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body {
+            flex-direction: column;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            position: relative;
+        }
+        table,td,th{
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+        }
+        th,td {
+            width: 150px;
+            height: 50px;
+            text-align: center;
+        }
+        .update,td,th {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .todo {
+            cursor: pointer;
+        }
+        .todo.line {
+            text-decoration: line-through;
+        }
+        .to-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .add-btn {
+            align-self: end;
+            margin: 20px 0;
+        }
+        .box{
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            position: absolute;
+            top:0;
+            left: 0;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-todos,.edit-todo{
+            width: 250px;
+            height: 180px;
+            gap: 15px;
+            background: #ffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .add-todos button,.edit-todo button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .add-todos span,.edit-todo span {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="to-list">
+        <button class="add-btn">添加事宜</button>
+        <table>
+            <thead>
+                <tr>
+                    <td>编号</td>
+                    <td>事宜</td>
+                    <td>操作</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="box">
+        <div class="add-todos">
+            <h2>添加事宜</h2>
+            <input type="text" placeholder="编号" class="add-id">
+            <input type="text" placeholder="事宜" class="add-todo">
+            <button class="add-info">添加</button>
+            <span>X</span>
+        </div>
+        <div class="edit-todo" style="display: none">
+            <h2>修改事宜</h2>
+            <input type="text" placeholder="事宜">
+            <button class="edit-btn">修改</button>
+            <span>X</span>
+        </div>
+    </div>
+
+
+<script>
+    let $=el=>document.querySelector(el);
+
+    let todoList= [
+            {id:1,todo:"Do some thing 1",finished:false},
+            {id:2,todo:"Do some thing 2",finished:false},
+            {id:3,todo:"Do some thing 3",finished:true},
+            {id:4,todo:"Do some thing 4",finished:false},
+            {id:5,todo:"Do some thing 5",finished:false},
+            {id:6,todo:"Do some thing 6",finished:true},
+            {id:7,todo:"Do some thing 7",finished:false},
+            {id:8,todo:"Do some thing 8",finished:false},
+            {id:9,todo:"Do some thing 9",finished:true},
+            {id:10,todo:"Do some thing 10",finished:false},
+        ];
+    function showData(data) {
+        $("tbody").innerHTML="";
+        for(let item of data){
+            let tr=document.createElement("tr");
+            // 行列显示
+            tr.innerHTML=`<td>${item.id}</td><td class="todo ${item.finished?"line":""}">${item.todo}</td><td><button class="update">修改</button></td><td><button class="delete">删除</button></td>`
+            tr.children[3].children[0].addEventListener("dblclick",delData);
+            tr.children[1].addEventListener("dblclick",setState);
+            tr.children[2].children[0].addEventListener("click",update);
+            $("tbody").append(tr);
+        }
+    }
+    showData(todoList);
+    let updateId;
+    function update(e) {
+        $(".box").style.display="flex";
+        $(".add-todos").style.display="none";
+        $(".edit-todo").style.display="flex";
+        $(".edit-todo input").value=e.target.parentNode.parentNode.children[1].innerHTML;
+        updateId=e.target.parentNode.parentNode.children[0].innerHTML;
+    }
+    $(".edit-btn").addEventListener("click",function (){
+        todoList.forEach(item=>{
+            if (item.id===+updateId) {
+                item.todo=$(".edit-todo input").value;
+                $(".box").style.display="none";
+                showData(todoList);
+            }
+        })
+    })
+
+
+
+
+    //双击删除按钮清除tr
+    function delData(e) {
+        let id=+e.target.parentNode.parentNode.children[0].innerHTML;
+        todoList.forEach((item,index)=>{
+            if (item.id===id) {
+                todoList.splice(index,1);
+                e.target.parentNode.parentNode.remove();
+            }
+        })
+    }
+    // 双击文字给文字加下划线
+    function setState(e) {
+        let id=+e.target.parentNode.children[0].innerHTML;
+        todoList.forEach((item,index)=>{
+            if (item.id===id) {
+                todoList[index].finished=!todoList[index].finished;
+                todoList[index].finished?e.target.classList.add("line"):e.target.classList.remove("line");
+            }
+        })
+    }
+
+    //删除按钮部分
+    $(".add-info").addEventListener("click",function (){
+        let todo= {
+            id: 0,
+            todo:"",
+            finished:false
+        }
+        let newId=todoList[todoList.length-1].id;
+        newId++;
+        todo.id=newId;
+        todo.todo=$(".add-todo").value;
+        todoList.push(todo);
+        $(".add-todo").value="";
+        $(".box").style.display="none";
+        showData(todoList);
+    })
+    $(".add-btn").addEventListener("click",function (){
+        $(".add-todos").style.display="flex";
+        $(".edit-todo").style.display="none";
+        $(".box").style.display="flex";
+    })
+    $(".add-todos span").addEventListener("click",function () {
+        $(".box").style.display="none";
+    })
+    $(".edit-todo span").addEventListener("click",function () {
+        $(".box").style.display="none";
+    })
+
+
+
+</script>
+</body>
+</html>
